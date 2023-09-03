@@ -7,11 +7,11 @@ This repository contains the source code for a Cinema Reservation System built u
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Database Setup](#database-setup)
-- [Running the Application](#running-the-application)
+- [Running the application in dev mode](#running-the-application-in-dev-mode)
 - [Running Tests](#running-tests)
 - [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [License](#license)
+- [Packaging and running the application](#packaging-and-running-the-application)
+- [Creating a native executable](#creating-a-native-executable)
 
 ## Getting Started
 
