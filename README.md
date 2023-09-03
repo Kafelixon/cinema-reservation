@@ -71,6 +71,7 @@ You can run your application in dev mode that enables live coding using:
 ```shell script
 ./mvnw compile quarkus:dev
 ```
+Now You can open http://localhost:8080/ to interact with the app through a simple interface.
 
 ## Running Tests
 
