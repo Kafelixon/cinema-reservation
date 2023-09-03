@@ -1,8 +1,69 @@
-# cinema-reservation
+# Cinema Reservation System
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This repository contains the source code for a Cinema Reservation System built using Quarkus, JAX-RS, and PostgreSQL.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+## Table of Contents
+
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Database Setup](#database-setup)
+- [Running the Application](#running-the-application)
+- [Running Tests](#running-tests)
+- [API Endpoints](#api-endpoints)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Getting Started
+
+These instructions will help you get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- JDK 11 or higher
+- Maven
+- PostgreSQL
+
+### Database Setup
+
+#### Step 1: Create the Database
+
+Run this command in your terminal to create a new database named `JEE1`:
+
+```shell script
+createdb -e -E utf-8 JEE1
+```
+
+#### Step 2: Create the User
+
+Execute the following command to create a new PostgreSQL user named `jee1` with the password `jee12345`:
+
+```shell script
+createuser -e -P jee1
+```
+
+When prompted, enter the password `jee12345`.
+
+#### Step 3: Create the Schema
+
+First, connect to the database:
+
+```shell script
+psql JEE1
+```
+
+Then, within the PostgreSQL prompt, execute:
+
+```sql
+CREATE SCHEMA jee1 AUTHORIZATION jee1;
+```
+
+#### Step 4: Connect to the Database
+
+You can connect to the database using:
+
+```shell script
+psql JEE1 -U jee1 -h localhost
+```
 
 ## Running the application in dev mode
 
@@ -11,7 +72,72 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw compile quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+## Running Tests
+
+If the application is running in dev mode, you can run the tests using:
+
+http://localhost:8080/q/dev-ui/continuous-testing
+
+Or you can run the tests using:
+
+```shell script
+./mvnw test
+```
+
+## API Endpoints
+
+### Movies
+
+- **GET /movies**: List all movies
+  - Response: Array of movies
+    ```json
+    [
+      {
+        "id": 1,
+        "name": "Movie 1",
+        "duration": 120
+      },
+      {
+        "id": 2,
+        "name": "Movie 2",
+        "duration": 140
+      }
+    ]
+    ```
+  
+### Showtimes
+
+- **GET /showtimes?movie_id={movie_id}**: List all showtimes for a specific movie
+  - Query Parameter: `movie_id` (required)
+  - Response: Array of showtimes
+    ```json
+    [
+      {
+        "id": 1,
+        "hall_id": 1,
+        "movie_id": 1,
+        "show_time": "2023-09-10 15:00:00"
+      }
+    ]
+    ```
+
+### Reservations
+
+- **POST /reservations/reserve**: Reserve a seat
+  - Query Parameters: 
+    - `showtimeId` (required)
+    - `seatNumber` (required)
+  - Response: Success message with reservation ID
+    ```text
+    Reservation successful! Reservation ID: 1
+    ```
+
+- **DELETE /reservations/cancel**: Cancel a reservation
+  - Query Parameter: `reservationId` (required)
+  - Response: Success message
+    ```text
+    Reservation canceled successfully!
+    ```
 
 ## Packaging and running the application
 
@@ -42,19 +168,3 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 ```shell script
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
-
-You can then execute your native executable with: `./target/cinema-reservation-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
-
-## Related Guides
-
-- RESTEasy Reactive ([guide](https://quarkus.io/guides/resteasy-reactive)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-
-## Provided Code
-
-### RESTEasy Reactive
-
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

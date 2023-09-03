@@ -33,31 +33,35 @@ public class ReservationResource {
   @Produces(MediaType.TEXT_PLAIN)
   public Response reserveSeat(@QueryParam("showtimeId") int showtimeId, @QueryParam("seatNumber") int seatNumber) {
     try {
-
       String result = db.transactionalOperation(IsolationLevel.READ_COMMITTED, new TransactionalTask<String>() {
         @Override
         public String execute(Connection connection) throws SQLException {
+          int generatedReservationId = -1; // Initialize with a default value
+
           // Check if the seat is already reserved
           try (PreparedStatement checkStmt = connection
               .prepareStatement("SELECT * FROM reservations WHERE showtime_id = ? AND seat_number = ?")) {
 
             checkStmt.setInt(1, showtimeId);
             checkStmt.setInt(2, seatNumber);
+
             try (ResultSet rs = checkStmt.executeQuery()) {
               if (rs.next()) {
                 return "Seat already reserved.";
               }
             }
-            // Reserve the seat
-            PreparedStatement insertStmt = connection
-                .prepareStatement("INSERT INTO reservations (showtime_id, seat_number) VALUES (?, ?)",
-                    Statement.RETURN_GENERATED_KEYS);
+          }
+
+          // Reserve the seat
+          try (PreparedStatement insertStmt = connection
+              .prepareStatement("INSERT INTO reservations (showtime_id, seat_number) VALUES (?, ?)",
+                  Statement.RETURN_GENERATED_KEYS)) {
+
             insertStmt.setInt(1, showtimeId);
             insertStmt.setInt(2, seatNumber);
             insertStmt.executeUpdate();
 
             // Retrieve the generated key (reservation ID)
-            int generatedReservationId = -1; // Initialize with a default value
             try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
               if (generatedKeys.next()) {
                 generatedReservationId = generatedKeys.getInt(1);
@@ -65,9 +69,9 @@ public class ReservationResource {
                 throw new SQLException("Creating reservation failed, no ID obtained.");
               }
             }
-
-            return "Reservation successful! Reservation ID: " + generatedReservationId;
           }
+
+          return "Reservation successful! Reservation ID: " + generatedReservationId;
         }
       });
       return Response.ok(result).build();

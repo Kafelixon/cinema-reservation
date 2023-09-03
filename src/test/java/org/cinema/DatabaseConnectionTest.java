@@ -5,6 +5,8 @@ import org.cinema.db.DBInterface;
 import org.cinema.db.DBInterface.DBException;
 import org.cinema.db.DBInterface.IsolationLevel;
 import org.cinema.db.DBInterface.TransactionalTask;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import jakarta.inject.Inject;
@@ -16,10 +18,16 @@ import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class CinemaReservationResourceTest {
+public class DatabaseConnectionTest {
 
     @Inject
     DBInterface db;
+
+    @BeforeEach
+    @AfterEach
+    public void setUp() {
+        TestDatabaseUtils.setUpDatabase(db);
+    }
 
     @Test
     public void testDatabase() {
@@ -40,8 +48,7 @@ public class CinemaReservationResourceTest {
                 }
             });
 
-            // Check if the result contains expected data (adjust according to your sample
-            // data)
+            // Check if the result contains expected data
             assertTrue(result.contains("Hall 1"));
             assertTrue(result.contains("Hall 2"));
             assertTrue(result.contains("Hall 3"));
