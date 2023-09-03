@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cinema Reservation System</title>
+    <script>
+        async function listMoviesAndShowtimes() {
+            const response = await fetch('/movies');
+            const movies = await response.json();
+            const movieList = document.getElementById("movieList");
+            movieList.innerHTML = "";
+
+            for (const movie of movies) {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${movie.id}: ${movie.name}`;
+                movieList.appendChild(listItem);
+
+                // Fetch and display showtimes for this movie
+                const showtimeResponse = await fetch(`/showtimes?movieId=${movie.id}`);
+                const showtimes = await showtimeResponse.json();
+                const nestedList = document.createElement("ul");
+
+                showtimes.forEach(showtime => {
+                    const showtimeItem = document.createElement("li");
+                    showtimeItem.textContent = `Showtime id: ${showtime.id}, Date and Time: ${showtime.showTime}`;
+                    nestedList.appendChild(showtimeItem);
+                });
+
+                listItem.appendChild(nestedList);
+            }
+        }
+
+        async function reserveSeat() {
+            const showtimeId = document.getElementById("showtimeId").value;
+            const seatNumber = document.getElementById("seatNumber").value;
+            const response = await fetch(`/reservations/reserve?showtimeId=${showtimeId}&seatNumber=${seatNumber}`, {
+                method: "POST"
+            });
+            const result = await response.text();
+            alert(result);
+        }
+
+        async function cancelReservation() {
+            const reservationId = document.getElementById("reservationId").value;
+            const response = await fetch(`/reservations/cancel?reservationId=${reservationId}`, {
+                method: "DELETE"
+            });
+            const result = await response.text();
+            alert(result);
+        }
+    </script>
+</head>
+<body>
+    <h1>Cinema Reservation System</h1>
+
+    <div>
+        <h2>List Movies and Showtimes</h2>
+        <button onclick="listMoviesAndShowtimes()">List Movies and Showtimes</button>
+        <ul id="movieList"></ul>
+    </div>
+
+    <div>
+        <h2>Reserve a Seat</h2>
+        <label for="showtimeId">Showtime ID:</label>
+        <input type="text" id="showtimeId">
+        <label for="seatNumber">Seat Number:</label>
+        <input type="text" id="seatNumber">
+        <button onclick="reserveSeat()">Reserve</button>
+    </div>
+
+    <div>
+        <h2>Cancel a Reservation</h2>
+        <label for="reservationId">Reservation ID:</label>
+        <input type="text" id="reservationId">
+        <button onclick="cancelReservation()">Cancel the reservation</button>
+    </div>
+</body>
+</html>
