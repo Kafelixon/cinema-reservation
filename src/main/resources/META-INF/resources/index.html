@@ -47,6 +47,36 @@
             const result = await response.text();
             alert(result);
         }
+
+        async function listReservationsForShowtime(){
+            const showtimeId = document.getElementById("showtimeIdToCheck").value;
+            const response = await fetch(`/reservations/get-reservations?showtimeId=${showtimeId}`);
+            const reservations = await response.json();
+            console.log(reservations);
+            const reservationList = document.getElementById("reservationList");
+            reservationList.innerHTML = "";
+
+            for (const reservation of reservations) {
+                const listItem = document.createElement("li");
+                listItem.textContent = `Reservation id: ${reservation.id}, Showtime id: ${reservation.showtimeId}, Reserved seat: ${reservation.seatNumber}`;
+
+                reservationList.appendChild(listItem);
+            }
+        }
+
+        async function listAllReservations() {
+            const response = await fetch('/reservations/show-all');
+            const reservations = await response.json();
+            console.log(reservations);
+            const reservationList = document.getElementById("allReservationList");
+            reservationList.innerHTML = "";
+
+            for (const reservation of reservations) {
+                const listItem = document.createElement("li");
+                listItem.textContent = `Reservation id: ${reservation.id}, Showtime id: ${reservation.showtimeId}, Reserved seat: ${reservation.seatNumber}`;
+                reservationList.appendChild(listItem);
+            }
+        }
     </script>
 </head>
 <body>
@@ -72,6 +102,19 @@
         <label for="reservationId">Reservation ID:</label>
         <input type="text" id="reservationId">
         <button onclick="cancelReservation()">Cancel the reservation</button>
+    </div>
+
+    <div>
+        <h2>List Reservations for a Showtime</h2>
+        <label for="showtimeIdToCheck">Showtime ID:</label>
+        <input type="text" id="showtimeIdToCheck">
+        <button onclick="listReservationsForShowtime()">List Reservations</button>
+        <ul id="reservationList"></ul>
+    </div>
+    <div>
+        <h2>List All Reservations</h2>
+        <button onclick="listAllReservations()">List All Reservations</button>
+        <ul id="allReservationList"></ul>
     </div>
 </body>
 </html>

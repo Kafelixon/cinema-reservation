@@ -4,8 +4,10 @@ import org.cinema.db.DBInterface;
 import org.cinema.db.DBInterface.DBException;
 import org.cinema.db.DBInterface.IsolationLevel;
 import org.cinema.db.DBInterface.TransactionalTask;
+import org.cinema.dto.Reservation;
 
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -15,6 +17,8 @@ import jakarta.ws.rs.core.Response;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -101,6 +105,61 @@ public class ReservationResource {
           }
         }
       });
+      return Response.ok(result).build();
+    } catch (DBException e) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity("Database operation failed: " + e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("/get-reservations")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response showAllReservations(@QueryParam("showtimeId") int showtimeId) {
+    try {
+      List<Reservation> result = db.transactionalOperation(IsolationLevel.READ_COMMITTED,
+          new TransactionalTask<List<Reservation>>() {
+            @Override
+            public List<Reservation> execute(Connection connection) throws SQLException {
+              List<Reservation> result = new ArrayList<>();
+              try (PreparedStatement selectStmt = connection
+                  .prepareStatement("SELECT * FROM reservations WHERE showtime_id = ?")) {
+                selectStmt.setInt(1, showtimeId);
+                try (ResultSet rs = selectStmt.executeQuery()) {
+                  while (rs.next()) {
+                    result.add(new Reservation(rs.getInt("id"), rs.getInt("showtime_id"), rs.getInt("seat_number")));
+                  }
+                }
+              }
+              return result;
+            }
+          });
+      return Response.ok(result).build();
+    } catch (DBException e) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity("Database operation failed: " + e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("/show-all")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response showAllReservations() {
+    try {
+      List<Reservation> result = db.transactionalOperation(IsolationLevel.READ_COMMITTED,
+          new TransactionalTask<List<Reservation>>() {
+            @Override
+            public List<Reservation> execute(Connection connection) throws SQLException {
+              List<Reservation> result = new ArrayList<>();
+              try (PreparedStatement selectStmt = connection.prepareStatement("SELECT * FROM reservations");
+                  ResultSet rs = selectStmt.executeQuery()) {
+                while (rs.next()) {
+                  result.add(new Reservation(rs.getInt("id"), rs.getInt("showtime_id"), rs.getInt("seat_number")));
+                }
+              }
+              return result;
+            }
+          });
       return Response.ok(result).build();
     } catch (DBException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
