@@ -21,7 +21,7 @@
 
                 showtimes.forEach(showtime => {
                     const showtimeItem = document.createElement("li");
-                    showtimeItem.textContent = `Showtime id: ${showtime.id}, Date and Time: ${showtime.showTime}`;
+                    showtimeItem.textContent = `Showtime id: ${showtime.id}, Hall Number: ${showtime.hallId}, Date and Time: ${showtime.showTime}`;
                     nestedList.appendChild(showtimeItem);
                 });
 
