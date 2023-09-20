@@ -22,7 +22,7 @@ public class TestDatabaseUtils {
       String sql = String.join("\n", lines);
       String[] commands = sql.split(";");
 
-      db.transactionalOperation(IsolationLevel.SERIALIZABLE, new TransactionalTask<Void>() {
+      db.transactionalOperation(IsolationLevel.READ_COMMITTED, new TransactionalTask<Void>() {
         @Override
         public Void execute(Connection connection) throws SQLException {
           try (Statement stmt = connection.createStatement()) {
