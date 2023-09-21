@@ -18,9 +18,46 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: JEE1
+          POSTGRES_USER: jee1
+          POSTGRES_PASSWORD: jee12345
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out repository code
+      uses: actions/checkout@v3
+      
+    - name: Set up environment
+      run: |
+        echo "DATABASE_URL=postgres://jee1:jee12345@localhost:5432/JEE1" >> $GITHUB_ENV
+
+    - name: Run migrations or setup
+      run: |
+        # Your commands to setup schema and other DB setups go here
+        psql $DATABASE_URL -c 'CREATE SCHEMA jee1 AUTHORIZATION jee1;'
+      env:
+        DATABASE_URL: "postgres://jee1:jee12345@localhost:5432/JEE1"
+    
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
