@@ -1,4 +1,5 @@
 # Cinema Reservation System
+![Maven Build and Tests](https://github.com/Kafelixon/cinema-reservation/actions/workflows/maven.yml/badge.svg?event=push)
 
 This repository contains the source code for a Cinema Reservation System built using Quarkus, JAX-RS, and PostgreSQL.
 
