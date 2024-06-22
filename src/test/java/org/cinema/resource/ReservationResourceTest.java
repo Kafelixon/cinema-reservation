@@ -59,4 +59,22 @@ public class ReservationResourceTest {
         .statusCode(200)
         .body(is("Reservation canceled successfully!"));
   }
+
+  @Test
+  public void testShowAll(){
+    given()
+        .when().get("/reservations/show-all")
+        .then()
+        .statusCode(200)
+        .body(is("[{\"id\":1,\"showtimeId\":1,\"seatNumber\":1},{\"id\":2,\"showtimeId\":1,\"seatNumber\":2},{\"id\":3,\"showtimeId\":2,\"seatNumber\":3}]"));
+  }
+
+  @Test
+  public void testGetReservationForShowtime(){
+    given()
+        .when().get("/reservations/get-reservations?showtimeId=1")
+        .then()
+        .statusCode(200)
+        .body(is("[{\"id\":1,\"showtimeId\":1,\"seatNumber\":1},{\"id\":2,\"showtimeId\":1,\"seatNumber\":2}]"));
+  }
 }
