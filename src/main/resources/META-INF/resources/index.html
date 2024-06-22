@@ -1,120 +1,195 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Cinema Reservation System</title>
     <script>
-        async function listMoviesAndShowtimes() {
-            const response = await fetch('/movies');
-            const movies = await response.json();
-            const movieList = document.getElementById("movieList");
-            movieList.innerHTML = "";
+      async function listMoviesAndShowtimes() {
+        try {
+          const response = await fetch("/movies");
+          if (!response.ok) {
+            throw new Error("Failed to fetch movies");
+          }
+          const movies = await response.json();
+          const movieList = document.getElementById("movieList");
+          movieList.innerHTML = "";
 
-            for (const movie of movies) {
-                const listItem = document.createElement("li");
-                listItem.textContent = `${movie.id}: ${movie.name}`;
-                movieList.appendChild(listItem);
+          for (const movie of movies) {
+            const listItem = document.createElement("li");
+            listItem.textContent = `${movie.id}: ${movie.name}`;
+            movieList.appendChild(listItem);
 
-                // Fetch and display showtimes for this movie
-                const showtimeResponse = await fetch(`/showtimes?movieId=${movie.id}`);
-                const showtimes = await showtimeResponse.json();
-                const nestedList = document.createElement("ul");
-
-                showtimes.forEach(showtime => {
-                    const showtimeItem = document.createElement("li");
-                    showtimeItem.textContent = `Showtime id: ${showtime.id}, Hall Number: ${showtime.hallId}, Date and Time: ${showtime.showTime}`;
-                    nestedList.appendChild(showtimeItem);
-                });
-
-                listItem.appendChild(nestedList);
+            // Fetch and display showtimes for this movie
+            const showtimeResponse = await fetch(
+              `/showtimes?movieId=${movie.id}`
+            );
+            if (!showtimeResponse.ok) {
+              throw new Error("Failed to fetch showtimes");
             }
-        }
+            const showtimes = await showtimeResponse.json();
+            const nestedList = document.createElement("ul");
 
-        async function reserveSeat() {
-            const showtimeId = document.getElementById("showtimeId").value;
-            const seatNumber = document.getElementById("seatNumber").value;
-            const response = await fetch(`/reservations/reserve?showtimeId=${showtimeId}&seatNumber=${seatNumber}`, {
-                method: "POST"
+            showtimes.forEach((showtime) => {
+              const showtimeItem = document.createElement("li");
+              showtimeItem.textContent = `Showtime id: ${showtime.id}, Hall Number: ${showtime.hallId}, Date and Time: ${showtime.showTime}`;
+              nestedList.appendChild(showtimeItem);
             });
-            const result = await response.text();
-            alert(result);
+
+            listItem.appendChild(nestedList);
+          }
+        } catch (error) {
+          alert("Error: " + error.message);
         }
+      }
 
-        async function cancelReservation() {
-            const reservationId = document.getElementById("reservationId").value;
-            const response = await fetch(`/reservations/cancel?reservationId=${reservationId}`, {
-                method: "DELETE"
-            });
-            const result = await response.text();
-            alert(result);
-        }
-
-        async function listReservationsForShowtime(){
-            const showtimeId = document.getElementById("showtimeIdToCheck").value;
-            const response = await fetch(`/reservations/get-reservations?showtimeId=${showtimeId}`);
-            const reservations = await response.json();
-            console.log(reservations);
-            const reservationList = document.getElementById("reservationList");
-            reservationList.innerHTML = "";
-
-            for (const reservation of reservations) {
-                const listItem = document.createElement("li");
-                listItem.textContent = `Reservation id: ${reservation.id}, Showtime id: ${reservation.showtimeId}, Reserved seat: ${reservation.seatNumber}`;
-
-                reservationList.appendChild(listItem);
+      async function reserveSeat() {
+        try {
+          const showtimeId = document.getElementById("showtimeId").value;
+          const seatNumber = document.getElementById("seatNumber").value;
+          const response = await fetch(
+            `/reservations/reserve?showtimeId=${showtimeId}&seatNumber=${seatNumber}`,
+            {
+              method: "POST",
             }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to reserve seat");
+          }
+          const result = await response.text();
+          alert(result);
+        } catch (error) {
+          alert("Error: " + error.message);
         }
+      }
 
-        async function listAllReservations() {
-            const response = await fetch('/reservations/show-all');
-            const reservations = await response.json();
-            console.log(reservations);
-            const reservationList = document.getElementById("allReservationList");
-            reservationList.innerHTML = "";
-
-            for (const reservation of reservations) {
-                const listItem = document.createElement("li");
-                listItem.textContent = `Reservation id: ${reservation.id}, Showtime id: ${reservation.showtimeId}, Reserved seat: ${reservation.seatNumber}`;
-                reservationList.appendChild(listItem);
+      async function cancelReservation() {
+        try {
+          const reservationId = document.getElementById("reservationId").value;
+          const response = await fetch(
+            `/reservations/cancel?reservationId=${reservationId}`,
+            {
+              method: "DELETE",
             }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to cancel reservation");
+          }
+          const result = await response.text();
+          alert(result);
+        } catch (error) {
+          alert("Error: " + error.message);
         }
+      }
+
+      async function listReservations(url, tableId) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error("Failed to fetch reservations");
+          }
+          const reservations = await response.json();
+          console.log(reservations);
+          const reservationTable = document.getElementById(tableId);
+          reservationTable.innerHTML = `
+                    <tr>
+                        <th>Reservation ID</th>
+                        <th>Showtime ID</th>
+                        <th>Seat Number</th>
+                    </tr>
+                `;
+
+          reservations.forEach((reservation) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${reservation.id}</td>
+                        <td>${reservation.showtimeId}</td>
+                        <td>${reservation.seatNumber}</td>
+                    `;
+            reservationTable.appendChild(row);
+          });
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      }
+
+      function listReservationsForShowtime() {
+        const showtimeId = document.getElementById("showtimeIdToCheck").value;
+        listReservations(
+          `/reservations/get-reservations?showtimeId=${showtimeId}`,
+          "reservationTable"
+        );
+      }
+
+      function listAllReservations() {
+        listReservations("/reservations/show-all", "allReservationTable");
+      }
     </script>
-</head>
-<body>
+    <style>
+      table {
+        margin: 0 0 40px 0;
+        width: fit-content;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        display: table;
+        @media screen and (max-width: 580px) {
+          display: block;
+        }
+      }
+
+      table tr {
+        background: #f6f6f6;
+        &:nth-of-type(odd) {
+          background: #e9e9e9;
+        }
+      }
+
+        table th {
+            font-weight: bold;
+            background: #f3f3f3;
+        }
+
+        table td {
+            padding: 0px;
+        }
+    </style>
+  </head>
+  <body>
     <h1>Cinema Reservation System</h1>
 
     <div>
-        <h2>List Movies and Showtimes</h2>
-        <button onclick="listMoviesAndShowtimes()">List Movies and Showtimes</button>
-        <ul id="movieList"></ul>
+      <h2>List Movies and Showtimes</h2>
+      <button onclick="listMoviesAndShowtimes()">
+        List Movies and Showtimes
+      </button>
+      <ul id="movieList"></ul>
     </div>
 
     <div>
-        <h2>Reserve a Seat</h2>
-        <label for="showtimeId">Showtime ID:</label>
-        <input type="text" id="showtimeId">
-        <label for="seatNumber">Seat Number:</label>
-        <input type="text" id="seatNumber">
-        <button onclick="reserveSeat()">Reserve</button>
+      <h2>Reserve a Seat</h2>
+      <label for="showtimeId">Showtime ID:</label>
+      <input type="text" id="showtimeId" />
+      <label for="seatNumber">Seat Number:</label>
+      <input type="text" id="seatNumber" />
+      <button onclick="reserveSeat()">Reserve</button>
     </div>
 
     <div>
-        <h2>Cancel a Reservation</h2>
-        <label for="reservationId">Reservation ID:</label>
-        <input type="text" id="reservationId">
-        <button onclick="cancelReservation()">Cancel the reservation</button>
+      <h2>Cancel a Reservation</h2>
+      <label for="reservationId">Reservation ID:</label>
+      <input type="text" id="reservationId" />
+      <button onclick="cancelReservation()">Cancel the reservation</button>
     </div>
 
     <div>
-        <h2>List Reservations for a Showtime</h2>
-        <label for="showtimeIdToCheck">Showtime ID:</label>
-        <input type="text" id="showtimeIdToCheck">
-        <button onclick="listReservationsForShowtime()">List Reservations</button>
-        <ul id="reservationList"></ul>
+      <h2>List Reservations for a Showtime</h2>
+      <label for="showtimeIdToCheck">Showtime ID:</label>
+      <input type="text" id="showtimeIdToCheck" />
+      <button onclick="listReservationsForShowtime()">List Reservations</button>
+      <table id="reservationTable"></table>
     </div>
+
     <div>
-        <h2>List All Reservations</h2>
-        <button onclick="listAllReservations()">List All Reservations</button>
-        <ul id="allReservationList"></ul>
+      <h2>List All Reservations</h2>
+      <button onclick="listAllReservations()">List All Reservations</button>
+      <table id="allReservationTable"></table>
     </div>
-</body>
+  </body>
 </html>
